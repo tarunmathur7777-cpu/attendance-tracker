@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Attendance Extractor</title>
+  <style>
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      width: 320px;
+      padding: 16px;
+      margin: 0;
+      background-color: #121212;
+      color: #fafafa;
+    }
+    h2 {
+      margin-top: 0;
+      font-size: 18px;
+      color: #60a5fa;
+      border-bottom: 1px solid #333;
+      padding-bottom: 8px;
+    }
+    .description {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 16px;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
+    .btn:hover {
+      background-color: #2563eb;
+    }
+    .input-group {
+      margin-top: 12px;
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-size: 12px;
+      margin-bottom: 6px;
+      color: #d1d5db;
+      font-weight: 500;
+    }
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #374151;
+      background: #1f2937;
+      color: white;
+      font-size: 13px;
+      outline: none;
+    }
+    input:focus {
+      border-color: #60a5fa;
+    }
+    #status {
+      margin-top: 16px;
+      font-size: 13px;
+      background-color: #065f46;
+      color: #34d399;
+      padding: 10px;
+      border-radius: 6px;
+      display: none;
+      text-align: center;
+    }
+    .error {
+      background-color: #7f1d1d !important;
+      color: #fca5a5 !important;
+    }
+  </style>
+</head>
+<body>
+  <h2>Smart Extractor</h2>
+  <div class="description">Extract attendance data from your portal and send it to your tracker app.</div>
+  
+  <div class="input-group">
+    <label for="targetUrl">Website URL</label>
+    <input type="url" id="targetUrl" value="http://localhost:5173" placeholder="http://localhost:5173">
+  </div>
+
+  <button class="btn" id="extractBtn">Extract & Send Data</button>
+  
+  <div id="status"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
