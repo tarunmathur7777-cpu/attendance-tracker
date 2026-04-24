@@ -4,11 +4,20 @@ import { useAttendance } from '../store/AttendanceContext';
 import { motion } from 'framer-motion';
 import { cn } from '../utils/cn';
 
-export const OverviewStats: React.FC = () => {
-  const { totalClasses, attendedClasses, getCurrentPercentage, getStrategy } = useAttendance();
-  const percentage = getCurrentPercentage();
+interface OverviewStatsProps {
+  customTotal?: number;
+  customAttended?: number;
+}
+
+export const OverviewStats: React.FC<OverviewStatsProps> = ({ customTotal, customAttended }) => {
+  const { totalClasses: globalTotal, attendedClasses: globalAttended, getCurrentPercentage, getStrategy } = useAttendance();
+  
+  const totalClasses = customTotal !== undefined ? customTotal : globalTotal;
+  const attendedClasses = customAttended !== undefined ? customAttended : globalAttended;
+  
+  const percentage = getCurrentPercentage(customTotal, customAttended);
   const clampedPercentage = Math.min(100, Math.max(0, percentage));
-  const { status } = getStrategy();
+  const { status } = getStrategy(customTotal, customAttended);
 
   const statusConfig = {
     Safe: { color: 'text-green-400', bg: 'bg-green-500/20', icon: ShieldCheck, label: 'Safe Zone' },

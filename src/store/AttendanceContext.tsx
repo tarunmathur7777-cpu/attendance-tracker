@@ -49,9 +49,9 @@ interface AttendanceContextType extends AttendanceState {
   clearLogs: () => void;
   
   // Analytics
-  getCurrentPercentage: () => number;
-  getProjectedPercentage: (targetDate: Date) => number;
-  getStrategy: () => { 
+  getCurrentPercentage: (customTotal?: number, customAttended?: number) => number;
+  getProjectedPercentage: (targetDate: Date, customTotal?: number, customAttended?: number, customLog?: Record<string, Status>) => number;
+  getStrategy: (customTotal?: number, customAttended?: number) => { 
     safeSkips: number; 
     requiredStreak: number; 
     status: 'Safe' | 'Risk' | 'Critical';
@@ -100,27 +100,22 @@ export const AttendanceProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   }, [state.settings.darkMode]);
 
-  // Extension Integration & Event Listener
+  // Listen for manual sync from the popup writing to localStorage
   useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.source !== window || !event.data) return;
-
-      if (event.data.type === 'PORTAL_DATA_SYNC') {
-        const payload = event.data.payload;
-        const rAtt = payload.sumAttended;
-        const rTot = payload.sumTotal;
-
-        if (rTot > 0) {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'smart_attendance_v2' && e.newValue) {
+        try {
+          const newState = JSON.parse(e.newValue);
           setState(prev => {
-            if (prev.attendedClasses === rAtt && prev.totalClasses === rTot) {
-               return prev; 
+            if (prev.attendedClasses === newState.attendedClasses && prev.totalClasses === newState.totalClasses) {
+              return prev;
             }
             
-            const newPct = (rAtt / rTot) * 100;
+            const newPct = newState.totalClasses === 0 ? 0 : (newState.attendedClasses / newState.totalClasses) * 100;
             const logEntry: ActionLog = {
               id: Math.random().toString(36).substr(2, 9),
               date: new Date().toISOString(),
-              action: `Auto-synced from College Portal`,
+              action: `Manually synced from College Portal`,
               resultingPct: newPct,
               type: 'SYSTEM'
             };
@@ -137,38 +132,20 @@ export const AttendanceProvider: React.FC<{ children: ReactNode }> = ({ children
 
             return {
               ...prev,
-              totalClasses: rTot,
-              attendedClasses: rAtt,
+              totalClasses: newState.totalClasses,
+              attendedClasses: newState.attendedClasses,
               logs: [logEntry, ...prev.logs],
               notifications: notifs
             };
           });
+        } catch (err) {
+          console.error(err);
         }
-      } else if (event.data.type === 'PORTAL_DATA_ERROR') {
-          setState(prev => {
-            const notifs = [...prev.notifications];
-            if (prev.settings.notificationsEnabled) {
-              notifs.unshift({
-                id: Math.random().toString(36).substr(2, 9),
-                message: `Portal Sync Error: ${event.data.error}`,
-                read: false,
-                timestamp: new Date().toISOString()
-              });
-            }
-            return { ...prev, notifications: notifs };
-          });
       }
     };
     
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, []);
-
-  // Dispatch silent initial sync on mount
-  useEffect(() => {
-      setTimeout(() => {
-          window.postMessage({ type: 'REQUEST_PORTAL_SYNC' }, '*');
-      }, 1500); 
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
   const getCurrentPct = (t = state.totalClasses, a = state.attendedClasses) => {
@@ -263,18 +240,23 @@ export const AttendanceProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   // Complex Analytics
-  const getCurrentPercentage = () => getCurrentPct();
+  const getCurrentPercentage = (customTotal?: number, customAttended?: number) => {
+    const t = customTotal !== undefined ? customTotal : state.totalClasses;
+    const a = customAttended !== undefined ? customAttended : state.attendedClasses;
+    return getCurrentPct(t, a);
+  };
   
-  const getProjectedPercentage = (targetDate: Date) => {
-    let t = state.totalClasses;
-    let a = state.attendedClasses;
+  const getProjectedPercentage = (targetDate: Date, customTotal?: number, customAttended?: number, customLog?: Record<string, Status>) => {
+    let t = customTotal !== undefined ? customTotal : state.totalClasses;
+    let a = customAttended !== undefined ? customAttended : state.attendedClasses;
+    const log = customLog !== undefined ? customLog : state.scenarioLog;
     const target = startOfDay(targetDate);
-    const dates = Object.keys(state.scenarioLog).sort();
+    const dates = Object.keys(log).sort();
     
     for (const dStr of dates) {
       const dObj = startOfDay(new Date(dStr));
       if (isBefore(dObj, target) || dObj.getTime() === target.getTime()) {
-        const s = state.scenarioLog[dStr];
+        const s = log[dStr];
         if (s === 'Present') { t += state.settings.classesPerDay; a += state.settings.classesPerDay; }
         else if (s === 'Absent') { t += state.settings.classesPerDay; }
       }
@@ -282,9 +264,12 @@ export const AttendanceProvider: React.FC<{ children: ReactNode }> = ({ children
     return t === 0 ? 0 : (a / t) * 100;
   };
 
-  const getStrategy = () => {
-    const pct = getCurrentPercentage();
+  const getStrategy = (customTotal?: number, customAttended?: number) => {
+    const pct = getCurrentPercentage(customTotal, customAttended);
     const T = state.settings.targetAttendance;
+    const tClasses = customTotal !== undefined ? customTotal : state.totalClasses;
+    const aClasses = customAttended !== undefined ? customAttended : state.attendedClasses;
+
     let safeSkips = 0;
     let requiredStreak = 0;
     let status: 'Safe' | 'Risk' | 'Critical' = 'Critical';
@@ -294,14 +279,12 @@ export const AttendanceProvider: React.FC<{ children: ReactNode }> = ({ children
 
     if (pct >= T) {
       // Calculate how many you can skip safely
-      // Formula: ((100*a) - (T*t)) / T
-      // To remain >= T: a / (t + x) >= T/100  => 100a >= Tt + Tx => x <= (100a - Tt)/T
-      const maxSkipsClasses = Math.floor((100 * state.attendedClasses - T * state.totalClasses) / T);
+      const maxSkipsClasses = Math.floor((100 * aClasses - T * tClasses) / T);
       safeSkips = Math.max(0, Math.floor(maxSkipsClasses / state.settings.classesPerDay));
     } else {
       // Calculate consecutive days needed
       if (T < 100) {
-        const reqClasses = Math.ceil((T * state.totalClasses - 100 * state.attendedClasses) / (100 - T));
+        const reqClasses = Math.ceil((T * tClasses - 100 * aClasses) / (100 - T));
         requiredStreak = Math.max(0, Math.ceil(reqClasses / state.settings.classesPerDay));
       } else {
         requiredStreak = Infinity;
@@ -312,8 +295,8 @@ export const AttendanceProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   const importFromPortal = () => {
-    pushNotification('Requesting sync with College Portal...');
-    window.postMessage({ type: 'REQUEST_PORTAL_SYNC' }, '*');
+    pushNotification('Please open the Chrome Extension to sync.');
+    alert("Manual Sync Required: Please open the 'Smart Extractor' extension popup and click 'Extract & Send Data'.");
   };
 
   return (

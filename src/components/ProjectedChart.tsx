@@ -5,10 +5,22 @@ import { addDays, startOfToday, format } from 'date-fns';
 import { Activity, BarChart2 } from 'lucide-react';
 import { cn } from '../utils/cn';
 
-export const ProjectedChart: React.FC = () => {
-  const { totalClasses, attendedClasses, scenarioLog, settings } = useAttendance();
+import type { Status } from '../store/AttendanceContext';
+
+interface ProjectedChartProps {
+  customTotal?: number;
+  customAttended?: number;
+  customLog?: Record<string, Status>;
+}
+
+export const ProjectedChart: React.FC<ProjectedChartProps> = ({ customTotal, customAttended, customLog }) => {
+  const { totalClasses: globalTotal, attendedClasses: globalAttended, scenarioLog: globalLog, settings } = useAttendance();
   const [chartType, setChartType] = useState<'line' | 'bar'>('line');
   const today = startOfToday();
+
+  const totalClasses = customTotal !== undefined ? customTotal : globalTotal;
+  const attendedClasses = customAttended !== undefined ? customAttended : globalAttended;
+  const scenarioLog = customLog !== undefined ? customLog : globalLog;
 
   const data = useMemo(() => {
     let t = totalClasses;

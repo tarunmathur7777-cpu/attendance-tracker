@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Layout } from './components/Layout';
 import { DashboardView } from './views/DashboardView';
+import { ManualDataView } from './views/ManualDataView';
 import { PlannerView } from './views/PlannerView';
 import { LogsView } from './views/LogsView';
 import { SettingsView } from './views/SettingsView';
@@ -11,6 +12,7 @@ function App() {
   const renderView = () => {
     switch (activeTab) {
       case 'dashboard': return <DashboardView />;
+      case 'manual': return <ManualDataView />;
       case 'planner': return <PlannerView />;
       case 'logs': return <LogsView />;
       case 'settings': return <SettingsView />;

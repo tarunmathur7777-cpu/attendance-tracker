@@ -5,11 +5,20 @@ import type { Status } from '../store/AttendanceContext';
 import { addDays, format, startOfToday } from 'date-fns';
 import { cn } from '../utils/cn';
 
-export const ScenarioPlanner: React.FC = () => {
-  const { scenarioLog, setScenario, getProjectedPercentage, settings, getCurrentPercentage } = useAttendance();
+interface ScenarioPlannerProps {
+  customTotal?: number;
+  customAttended?: number;
+  customLog?: Record<string, Status>;
+  onToggle?: (dateStr: string, status: Status | null) => void;
+}
+
+export const ScenarioPlanner: React.FC<ScenarioPlannerProps> = ({ customTotal, customAttended, customLog, onToggle }) => {
+  const { scenarioLog: globalLog, setScenario, getProjectedPercentage, settings, getCurrentPercentage } = useAttendance();
   const [visibleDays, setVisibleDays] = useState<number>(7);
   const today = startOfToday();
   
+  const scenarioLog = customLog !== undefined ? customLog : globalLog;
+
   // Generate next N days for quick planning
   const upcomingDays = useMemo(() => {
     return Array.from({ length: visibleDays }).map((_, i) => {
@@ -27,12 +36,17 @@ export const ScenarioPlanner: React.FC = () => {
   const hasSelections = selectedDates.length > 0;
   
   const finalProjectedPct = hasSelections 
-    ? getProjectedPercentage(new Date(selectedDates[selectedDates.length - 1]))
-    : getCurrentPercentage();
+    ? getProjectedPercentage(new Date(selectedDates[selectedDates.length - 1]), customTotal, customAttended, customLog)
+    : getCurrentPercentage(customTotal, customAttended);
   
   const isSafe = finalProjectedPct >= settings.targetAttendance;
 
   const handleToggle = (dateStr: string, status: Status) => {
+    if (onToggle) {
+        onToggle(dateStr, scenarioLog[dateStr] === status ? null : status);
+        return;
+    }
+    
     if (scenarioLog[dateStr] === status) {
       setScenario(dateStr, null); // toggle off
     } else {
@@ -53,7 +67,7 @@ export const ScenarioPlanner: React.FC = () => {
         {upcomingDays.map((day) => {
           const status = scenarioLog[day.dateStr];
           const isActive = !!status;
-          const projectedForDay = isActive ? getProjectedPercentage(day.date) : null;
+          const projectedForDay = isActive ? getProjectedPercentage(day.date, customTotal, customAttended, customLog) : null;
 
           return (
             <div 

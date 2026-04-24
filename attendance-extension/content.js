@@ -80,35 +80,29 @@
     let totalClasses = 0;
     let attendedClasses = 0;
 
-    // Try targeted indices first
-    if (totalIdx !== -1 && cells[totalIdx]) {
-      const nums = extractNumbers(cells[totalIdx].textContent);
-      if (nums.length > 0) totalClasses = nums[0];
-    }
-    
-    if (attendedIdx !== -1 && cells[attendedIdx]) {
-      const nums = extractNumbers(cells[attendedIdx].textContent);
-      if (nums.length > 0) attendedClasses = nums[0];
+    // First try to find a combined format like "12/18" or "12 / 18" in ANY cell
+    let foundCombined = false;
+    for (let i = 0; i < cells.length; i++) {
+      if (i === subjectIdx) continue; // skip the subject name cell just in case
+      const match = cells[i].textContent.match(/(\d+)\s*\/\s*(\d+)/);
+      if (match) {
+        attendedClasses = parseInt(match[1], 10);
+        totalClasses = parseInt(match[2], 10);
+        foundCombined = true;
+        break;
+      }
     }
 
-    // Fallback heuristic: If we still don't have good numbers, scan the whole row for numbers
-    if (totalIdx === -1 || attendedIdx === -1 || Number.isNaN(totalClasses) || totalClasses === 0) {
-      // Collect all raw integers in the row text
-      let rowNumbers = [];
-      cells.forEach((c, idx) => {
-        if (idx === subjectIdx) return; // Skip subject name col
-        rowNumbers.push(...extractNumbers(c.textContent));
-      });
+    if (!foundCombined) {
+      // Fallback to separate columns if "XX/YY" isn't found
+      if (totalIdx !== -1 && cells[totalIdx]) {
+        const nums = extractNumbers(cells[totalIdx].textContent);
+        if (nums.length > 0) totalClasses = nums[0];
+      }
       
-      // Filter out weird large numbers (e.g., Course ID like 2023194)
-      rowNumbers = rowNumbers.filter(n => n >= 0 && n <= 500); 
-
-      // If we found at least two candidate numbers, typically smaller = attended, larger = total
-      if (rowNumbers.length >= 2) {
-        // Find top two distinct numbers (most likely attended/total pair)
-        const sorted = [...rowNumbers].sort((a,b) => b - a);
-        totalClasses = sorted[0]; // Assuming highest
-        attendedClasses = sorted[1]; // Second highest
+      if (attendedIdx !== -1 && cells[attendedIdx]) {
+        const nums = extractNumbers(cells[attendedIdx].textContent);
+        if (nums.length > 0) attendedClasses = nums[0];
       }
     }
 

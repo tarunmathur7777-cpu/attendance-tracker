@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, CalendarCheck, FileText, Settings, Moon, Sun, Bell } from 'lucide-react';
+import { LayoutDashboard, CalendarCheck, FileText, Settings, Moon, Sun, Bell, Edit3 } from 'lucide-react';
 import { useAttendance } from '../store/AttendanceContext';
 import { cn } from '../utils/cn';
 import { formatDistanceToNow } from 'date-fns';
@@ -18,6 +18,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
 
   const navItems = [
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { id: 'manual', icon: Edit3, label: 'Manual Data' },
     { id: 'planner', icon: CalendarCheck, label: 'AI Planner' },
     { id: 'logs', icon: FileText, label: 'System Logs' },
     { id: 'settings', icon: Settings, label: 'Settings' },

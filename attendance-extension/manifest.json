@@ -6,16 +6,6 @@
   "action": {
     "default_popup": "popup.html"
   },
-  "background": {
-    "service_worker": "background.js"
-  },
-  "content_scripts": [
-    {
-      "matches": ["*://localhost/*"],
-      "js": ["content_app.js"],
-      "run_at": "document_idle"
-    }
-  ],
   "permissions": [
     "activeTab",
     "scripting",
