@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { OverviewStats } from '../components/OverviewStats';
 import { ProjectedChart } from '../components/ProjectedChart';
 import { ScenarioPlanner } from '../components/ScenarioPlanner';
