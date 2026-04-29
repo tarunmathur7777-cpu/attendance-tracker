@@ -21,7 +21,7 @@ export const ManualDataView: React.FC = () => {
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Strategy engine pulls from local sandbox instead of global store
-  const { safeSkips, requiredStreak, status } = getStrategy(localTotal, localAttended);
+  const { safeSkips, requiredStreak } = getStrategy(localTotal, localAttended);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +61,7 @@ export const ManualDataView: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            {status === 'Safe' && safeSkips > 0 ? (
+            {safeSkips > 0 ? (
               <div className="bg-green-500/10 dark:bg-green-500/20 p-5 lg:p-6 rounded-xl border border-green-500/20 flex gap-4 items-start">
                 <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center shrink-0 text-green-500">
                   <CheckCircle2 size={20} />
@@ -98,9 +98,17 @@ export const ManualDataView: React.FC = () => {
                 </div>
               </div>
             ) : (
-                <div className="bg-surfaceVariant-light dark:bg-surfaceVariant-dark p-5 lg:p-6 rounded-xl border border-border-light dark:border-border-dark flex gap-4 items-start">
-                    <p className="text-sm text-text-muted-light dark:text-text-muted-dark">AI calculating optimal paths based on your inputs...</p>
+              <div className="bg-blue-500/10 dark:bg-blue-500/20 p-5 lg:p-6 rounded-xl border border-blue-500/20 flex gap-4 items-start">
+                <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0 text-blue-500">
+                  <CheckCircle2 size={20} />
                 </div>
+                <div>
+                  <h5 className="font-bold text-blue-600 dark:text-blue-400 mb-1">On Track - No Margin</h5>
+                  <p className="text-sm text-text-muted-light dark:text-text-muted-dark leading-relaxed font-medium">
+                    You are exactly on track! However, skipping any upcoming classes will drop you below your target. Maintain your attendance.
+                  </p>
+                </div>
+              </div>
             )}
           </div>
         </div>
