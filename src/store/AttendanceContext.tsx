@@ -53,6 +53,7 @@ interface AttendanceContextType extends AttendanceState {
   getProjectedPercentage: (targetDate: Date, customTotal?: number, customAttended?: number, customLog?: Record<string, Status>) => number;
   getStrategy: (customTotal?: number, customAttended?: number) => { 
     safeSkips: number; 
+    safeSkipsClasses: number;
     requiredStreak: number; 
     status: 'Safe' | 'Risk' | 'Critical';
   };
@@ -271,6 +272,7 @@ export const AttendanceProvider: React.FC<{ children: ReactNode }> = ({ children
     const aClasses = customAttended !== undefined ? customAttended : state.attendedClasses;
 
     let safeSkips = 0;
+    let safeSkipsClasses = 0;
     let requiredStreak = 0;
     let status: 'Safe' | 'Risk' | 'Critical' = 'Critical';
 
@@ -280,6 +282,7 @@ export const AttendanceProvider: React.FC<{ children: ReactNode }> = ({ children
     if (pct >= T) {
       // Calculate how many you can skip safely
       const maxSkipsClasses = Math.floor((100 * aClasses - T * tClasses) / T);
+      safeSkipsClasses = Math.max(0, maxSkipsClasses);
       safeSkips = Math.max(0, Math.floor(maxSkipsClasses / state.settings.classesPerDay));
     } else {
       // Calculate consecutive days needed
@@ -291,7 +294,7 @@ export const AttendanceProvider: React.FC<{ children: ReactNode }> = ({ children
       }
     }
 
-    return { safeSkips, requiredStreak, status };
+    return { safeSkips, safeSkipsClasses, requiredStreak, status };
   };
 
   const importFromPortal = () => {

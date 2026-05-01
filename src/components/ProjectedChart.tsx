@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { useAttendance } from '../store/AttendanceContext';
-import { addDays, startOfToday, format } from 'date-fns';
+import { addDays, startOfToday, format, isBefore, startOfDay } from 'date-fns';
 import { Activity, BarChart2 } from 'lucide-react';
 import { cn } from '../utils/cn';
 
@@ -26,6 +26,16 @@ export const ProjectedChart: React.FC<ProjectedChartProps> = ({ customTotal, cus
     let t = totalClasses;
     let a = attendedClasses;
     const chartData = [];
+
+    const dates = Object.keys(scenarioLog).sort();
+    for (const dStr of dates) {
+      const dObj = startOfDay(new Date(dStr));
+      if (isBefore(dObj, today) || dObj.getTime() === today.getTime()) {
+        const s = scenarioLog[dStr];
+        if (s === 'Present') { t += settings.classesPerDay; a += settings.classesPerDay; }
+        else if (s === 'Absent') { t += settings.classesPerDay; }
+      }
+    }
 
     chartData.push({
       date: format(today, 'MMM dd'),
