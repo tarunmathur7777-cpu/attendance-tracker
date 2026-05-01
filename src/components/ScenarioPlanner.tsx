@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Layers, Plus, AlertCircle, ShieldCheck, TrendingDown, TrendingUp } from 'lucide-react';
 import { useAttendance } from '../store/AttendanceContext';
 import type { Status } from '../store/AttendanceContext';
-import { addDays, format, startOfToday } from 'date-fns';
+import { addDays, format, startOfToday, startOfDay, isBefore } from 'date-fns';
 import { cn } from '../utils/cn';
 
 interface ScenarioPlannerProps {
@@ -32,7 +32,11 @@ export const ScenarioPlanner: React.FC<ScenarioPlannerProps> = ({ customTotal, c
     });
   }, [today, visibleDays]);
 
-  const selectedDates = Object.keys(scenarioLog).filter(d => scenarioLog[d] !== null).sort();
+  const selectedDates = Object.keys(scenarioLog).filter(d => {
+    if (scenarioLog[d] === null) return false;
+    const dObj = startOfDay(new Date(d));
+    return isBefore(today, dObj); // strictly after today
+  }).sort();
   const hasSelections = selectedDates.length > 0;
   
   const finalProjectedPct = hasSelections 

@@ -252,10 +252,15 @@ export const AttendanceProvider: React.FC<{ children: ReactNode }> = ({ children
     let a = customAttended !== undefined ? customAttended : state.attendedClasses;
     const log = customLog !== undefined ? customLog : state.scenarioLog;
     const target = startOfDay(targetDate);
+    const today = startOfDay(new Date());
     const dates = Object.keys(log).sort();
     
     for (const dStr of dates) {
       const dObj = startOfDay(new Date(dStr));
+      
+      // Ignore past dates or today, as current actuals already include them
+      if (isBefore(dObj, today) || dObj.getTime() === today.getTime()) continue;
+
       if (isBefore(dObj, target) || dObj.getTime() === target.getTime()) {
         const s = log[dStr];
         if (s === 'Present') { t += state.settings.classesPerDay; a += state.settings.classesPerDay; }

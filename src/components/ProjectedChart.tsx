@@ -27,16 +27,7 @@ export const ProjectedChart: React.FC<ProjectedChartProps> = ({ customTotal, cus
     let a = attendedClasses;
     const chartData = [];
 
-    const dates = Object.keys(scenarioLog).sort();
-    for (const dStr of dates) {
-      const dObj = startOfDay(new Date(dStr));
-      if (isBefore(dObj, today) || dObj.getTime() === today.getTime()) {
-        const s = scenarioLog[dStr];
-        if (s === 'Present') { t += settings.classesPerDay; a += settings.classesPerDay; }
-        else if (s === 'Absent') { t += settings.classesPerDay; }
-      }
-    }
-
+    // The baseline starts exactly at current attendance
     chartData.push({
       date: format(today, 'MMM dd'),
       percentage: t === 0 ? 0 : Number(((a / t) * 100).toFixed(2)),
