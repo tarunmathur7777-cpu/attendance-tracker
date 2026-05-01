@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { useAttendance } from '../store/AttendanceContext';
-import { addDays, startOfToday, format, isBefore, startOfDay } from 'date-fns';
+import { addDays, startOfToday, format } from 'date-fns';
 import { Activity, BarChart2 } from 'lucide-react';
 import { cn } from '../utils/cn';
 
