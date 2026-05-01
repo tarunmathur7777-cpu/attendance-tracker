@@ -5,6 +5,7 @@ import { ManualDataView } from './views/ManualDataView';
 import { PlannerView } from './views/PlannerView';
 import { LogsView } from './views/LogsView';
 import { SettingsView } from './views/SettingsView';
+import { ExtensionView } from './views/ExtensionView';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -14,6 +15,7 @@ function App() {
       case 'dashboard': return <DashboardView />;
       case 'manual': return <ManualDataView />;
       case 'planner': return <PlannerView />;
+      case 'extension': return <ExtensionView />;
       case 'logs': return <LogsView />;
       case 'settings': return <SettingsView />;
       default: return <DashboardView />;

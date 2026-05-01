@@ -94,15 +94,33 @@
     }
 
     if (!foundCombined) {
-      // Fallback to separate columns if "XX/YY" isn't found
-      if (totalIdx !== -1 && cells[totalIdx]) {
-        const nums = extractNumbers(cells[totalIdx].textContent);
-        if (nums.length > 0) totalClasses = nums[0];
-      }
+      // Fallback 1: Use specific columns if identified
+      if (totalIdx !== -1 && cells[totalIdx] && attendedIdx !== -1 && cells[attendedIdx]) {
+        const tNums = extractNumbers(cells[totalIdx].textContent);
+        const aNums = extractNumbers(cells[attendedIdx].textContent);
+        if (tNums.length > 0 && aNums.length > 0) {
+          totalClasses = tNums[0];
+          attendedClasses = aNums[0];
+        }
+      } 
       
-      if (attendedIdx !== -1 && cells[attendedIdx]) {
-        const nums = extractNumbers(cells[attendedIdx].textContent);
-        if (nums.length > 0) attendedClasses = nums[0];
+      // Fallback 2: Scan all cells in the row for 'P' / 'A' markers (Timetable/Daily Layout)
+      if (totalClasses === 0) {
+        let pCount = 0;
+        let aCount = 0;
+        for (let i = 0; i < cells.length; i++) {
+          if (i === subjectIdx) continue;
+          const cellText = cleanText(cells[i].textContent).toUpperCase();
+          if (cellText === 'P' || cellText === 'PRESENT' || cellText === '1') {
+            pCount++;
+          } else if (cellText === 'A' || cellText === 'ABSENT' || cellText === '0') {
+            aCount++;
+          }
+        }
+        if (pCount > 0 || aCount > 0) {
+          attendedClasses = pCount;
+          totalClasses = pCount + aCount;
+        }
       }
     }
 

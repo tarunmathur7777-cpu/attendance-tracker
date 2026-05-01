@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, CalendarCheck, FileText, Settings, Moon, Sun, Bell, Edit3 } from 'lucide-react';
+import { LayoutDashboard, CalendarCheck, FileText, Settings, Moon, Sun, Bell, Edit3, Download } from 'lucide-react';
 import { useAttendance } from '../store/AttendanceContext';
 import { cn } from '../utils/cn';
 import { formatDistanceToNow } from 'date-fns';
@@ -20,6 +20,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { id: 'manual', icon: Edit3, label: 'Manual Data' },
     { id: 'planner', icon: CalendarCheck, label: 'AI Planner' },
+    { id: 'extension', icon: Download, label: 'Get Extension' },
     { id: 'logs', icon: FileText, label: 'System Logs' },
     { id: 'settings', icon: Settings, label: 'Settings' },
   ];
@@ -82,7 +83,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeTab, onTabChange
           <div className="flex flex-col">
             <span className="text-xs font-bold text-primary tracking-widest uppercase">{activeTab}</span>
             <p className="text-lg lg:text-xl font-bold tracking-tight text-text-light dark:text-text-dark capitalize">
-              {activeTab === 'dashboard' ? 'Overview & Strategy' : activeTab}
+              {activeTab === 'dashboard' ? 'Overview & Strategy' : 
+               activeTab === 'extension' ? 'SmartTrack Extension' : activeTab}
             </p>
           </div>
           
