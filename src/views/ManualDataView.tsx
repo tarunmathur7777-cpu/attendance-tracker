@@ -21,7 +21,7 @@ export const ManualDataView: React.FC = () => {
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Strategy engine pulls from local sandbox instead of global store
-  const { safeSkips, requiredStreak } = getStrategy(localTotal, localAttended);
+  const { safeSkips, safeSkipsClasses, requiredStreak } = getStrategy(localTotal, localAttended);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,15 +61,15 @@ export const ManualDataView: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            {safeSkips > 0 ? (
+            {safeSkipsClasses > 0 ? (
               <div className="bg-green-500/10 dark:bg-green-500/20 p-5 lg:p-6 rounded-xl border border-green-500/20 flex gap-4 items-start">
                 <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center shrink-0 text-green-500">
                   <CheckCircle2 size={20} />
                 </div>
                 <div>
-                  <h5 className="font-bold text-green-600 dark:text-green-400 mb-1">Strategic Reserve Available</h5>
+                  <h5 className="font-bold text-green-600 dark:text-green-400 mb-1">Leave Status: Eligible</h5>
                   <p className="text-sm text-text-muted-light dark:text-text-muted-dark leading-relaxed font-medium">
-                    You can safely skip <span className="font-bold text-text-light dark:text-text-dark">{safeSkips} upcoming days</span> without dropping below your target percentage. Keep up the good work!
+                    You can safely skip <span className="font-bold text-text-light dark:text-text-dark">{safeSkipsClasses} total classes</span> (approx. {safeSkips} days) without dropping below your target percentage. Keep up the good work!
                   </p>
                 </div>
               </div>
@@ -79,9 +79,9 @@ export const ManualDataView: React.FC = () => {
                   <ArrowRight size={20} />
                 </div>
                 <div>
-                  <h5 className="font-bold text-yellow-600 dark:text-yellow-400 mb-1">Required Continuity</h5>
+                  <h5 className="font-bold text-yellow-600 dark:text-yellow-400 mb-1">Leave Status: Not Eligible (Required Continuity)</h5>
                   <p className="text-sm text-text-muted-light dark:text-text-muted-dark leading-relaxed font-medium">
-                    To reach your exact target, you must attend the next <span className="font-bold text-text-light dark:text-text-dark">{requiredStreak} consecutive days</span>. Plan accordingly.
+                    You cannot take leave right now. To reach your exact target, you must attend the next <span className="font-bold text-text-light dark:text-text-dark">{requiredStreak} consecutive days</span>. Plan accordingly.
                   </p>
                 </div>
               </div>
@@ -91,9 +91,9 @@ export const ManualDataView: React.FC = () => {
                   <ArrowRight size={20} />
                 </div>
                 <div>
-                  <h5 className="font-bold text-red-600 dark:text-red-400 mb-1">Mathematical Impossibility</h5>
+                  <h5 className="font-bold text-red-600 dark:text-red-400 mb-1">Leave Status: Not Eligible (Mathematical Impossibility)</h5>
                   <p className="text-sm text-text-muted-light dark:text-text-muted-dark leading-relaxed font-medium">
-                    You cannot hit your target by the end of the year. Please adjust your target settings.
+                    You cannot take leave. In fact, you cannot hit your target by the end of the year. Please adjust your target settings.
                   </p>
                 </div>
               </div>
@@ -103,9 +103,9 @@ export const ManualDataView: React.FC = () => {
                   <CheckCircle2 size={20} />
                 </div>
                 <div>
-                  <h5 className="font-bold text-blue-600 dark:text-blue-400 mb-1">On Track - No Margin</h5>
+                  <h5 className="font-bold text-blue-600 dark:text-blue-400 mb-1">Leave Status: Not Eligible (On Track - No Margin)</h5>
                   <p className="text-sm text-text-muted-light dark:text-text-muted-dark leading-relaxed font-medium">
-                    You are exactly on track! However, skipping any upcoming classes will drop you below your target. Maintain your attendance.
+                    You are exactly on track, but you cannot take leave! Skipping any upcoming classes will drop you below your target. Maintain your attendance.
                   </p>
                 </div>
               </div>
